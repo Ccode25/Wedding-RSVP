@@ -33,14 +33,24 @@ const RSVPForm = () => {
         `http://localhost:5000/guest?guestName=${guestName}`
       );
 
+      if (response.data === 0) {
+        // If no guest is found
+        setError("No name found");
+        setSearchPerformed(false);
+        return;
+      }
       if (response.data.message) {
+        setSearchPerformed(false);
         setError(response.data.message);
-        setGuest([]);
+        return;
       } else {
         setGuest(response.data);
+        setSearchPerformed(true);
       }
     } catch (error) {
+      console.error(error);
       setGuest([]);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,7 +61,7 @@ const RSVPForm = () => {
   };
 
   const handleGuestSelect = (id) => {
-    setSelectedGuestId(id); // Set the selected guest ID
+    setSelectedGuestId((prevId) => (prevId === id ? null : id)); // Toggle selection
   };
 
   const handleResponse = async (id, action) => {
@@ -60,41 +70,33 @@ const RSVPForm = () => {
       return;
     }
 
-    console.log(`Guest ID: ${id}, Action: ${action}`);
-
-    // Determine the URL based on the action
     const url =
       action === "accept"
         ? "http://localhost:5000/guest/accept"
         : "http://localhost:5000/guest/decline";
 
     try {
-      // Send the guest ID as data in the request body
       const response = await axios.post(url, { guestId: id });
-
       console.log(response.data);
 
-      // Set the response state
       setResponseReceived(true);
       setIsAttending(action === "accept");
 
-      // Reset the guest list without clearing the guestName
       setGuest([]);
       setSearchPerformed(false);
     } catch (error) {
-      // Log the error or display a message to the user
       console.error("Error occurred:", error);
       setError("Something went wrong. Please try again.");
     }
   };
 
-  // Reset to allow another search
   const resetSearch = () => {
     setGuest([]);
     setResponseReceived(false);
     setSearchPerformed(false);
-    setGuestName(""); // Optional: clear the guest name field
-    setSelectedGuestId(null); // Reset the selected guest
+    setGuestName("");
+    setSelectedGuestId(null);
+    setError(null); // Clear any errors
   };
 
   return (
@@ -110,36 +112,31 @@ const RSVPForm = () => {
       {/* Form Content */}
       <div className="relative z-10 w-full max-w-4xl text-white px-6 mt-10">
         <RsvpHeader />
-
         <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-          <InputForm
-            details="Enter Name"
-            icon={FaSearch}
-            placeholder="Search your name"
-            type="text"
-            id="search-name"
-            htmlFor="search-name"
-            value={guestName}
-            className="w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
-            onChange={handleInputChange}
-          />
+          {/* Conditional Rendering for Input and Search */}
+          {!searchPerformed && !responseReceived && (
+            <>
+              <InputForm
+                details="Enter Name"
+                icon={FaSearch}
+                placeholder="Search your name"
+                type="text"
+                id="search-name"
+                htmlFor="search-name"
+                value={guestName}
+                className="w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
+                onChange={handleInputChange}
+              />
 
-          <Button
-            label={loading ? "Searching..." : "Find"}
-            onClick={searchGuest}
-          />
-
-          {/* Error Message */}
-          {error && <p className="mt-4 text-red-500 text-xl">{error}</p>}
-
-          {/* No Guest Found */}
-          {searchPerformed && guest.length === 0 && !loading && !error && (
-            <p className="text-yellow-500 mt-4">
-              No guest found with this name.
-            </p>
+              <Button
+                label={loading ? "Searching..." : "Find"}
+                onClick={searchGuest}
+              />
+            </>
           )}
 
-          {/* Guest List */}
+          {error && <p className="mt-4 text-red-500 text-xl">{error}</p>}
+
           {guest.length > 0 && !responseReceived && (
             <div className="mt-6 p-8 rounded-lg shadow-xl space-y-8">
               <p className="text-4xl font-semibold text-white-800 font-greatVibes">
@@ -152,14 +149,13 @@ const RSVPForm = () => {
                     key={g.id}
                     className="flex flex-col sm:flex-row sm:items-start rounded-lg p-6 space-y-6 sm:space-x-8 sm:space-y-0"
                   >
-                    {/* Checkbox on the left of the name */}
                     <div className="flex justify-start items-center">
                       <input
                         type="checkbox"
                         id={`select-${g.id}`}
-                        className="mr-4 flex-shrink-0" // Prevent the checkbox from shrinking
-                        onChange={() => handleGuestSelect(g.id)} // Set the selected guest ID
-                        checked={selectedGuestId === g.id} // Ensure the selected checkbox stays checked
+                        className="mr-4 flex-shrink-0"
+                        onChange={() => handleGuestSelect(g.id)}
+                        checked={selectedGuestId === g.id}
                       />
                       <label
                         htmlFor={`select-${g.id}`}
@@ -169,16 +165,15 @@ const RSVPForm = () => {
                       </label>
                     </div>
 
-                    {/* Name Input Form */}
                     <InputForm
                       icon={FaUser}
                       placeholder="Enter your full name"
                       type="text"
-                      id={`guest-${g.id}`} // Unique id for each guest
-                      htmlFor={`guest-${g.id}`} // Unique htmlFor to match the id
+                      id={`guest-${g.id}`}
+                      htmlFor={`guest-${g.id}`}
                       value={g.guestname}
                       readOnly={readOnly}
-                      className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none" // Increase font size for guest name
+                      className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
 
                     <InputForm
@@ -188,8 +183,8 @@ const RSVPForm = () => {
                       id="email-id"
                       htmlFor="email-id"
                       value={g.email}
-                      className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none" // Increase font size for guest name
-                      onChange={handleInputChange}
+                      readOnly={readOnly}
+                      className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
 
                     <div className="flex space-x-4 w-full sm:w-auto">
@@ -201,7 +196,7 @@ const RSVPForm = () => {
                             : "opacity-50 cursor-not-allowed"
                         }`}
                         onClick={() => handleResponse(g.id, "accept")}
-                        disabled={selectedGuestId !== g.id} // Enable only for selected guest
+                        disabled={selectedGuestId !== g.id}
                       >
                         Yes
                       </button>
@@ -213,9 +208,9 @@ const RSVPForm = () => {
                             : "opacity-50 cursor-not-allowed"
                         }`}
                         onClick={() => handleResponse(g.id, "decline")}
-                        disabled={selectedGuestId !== g.id} // Enable only for selected guest
+                        disabled={selectedGuestId !== g.id}
                       >
-                        NO
+                        No
                       </button>
                     </div>
                   </div>
@@ -224,7 +219,6 @@ const RSVPForm = () => {
             </div>
           )}
 
-          {/* Display Response Message */}
           {responseReceived && (
             <ResponseMessage
               message="Thank you for your response!"
@@ -232,7 +226,6 @@ const RSVPForm = () => {
             />
           )}
 
-          {/* Button to allow another search */}
           {responseReceived && (
             <div className="mt-6">
               <Button label="Search Again" onClick={resetSearch} />
