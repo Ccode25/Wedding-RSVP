@@ -44,6 +44,7 @@ const RSVPForm = () => {
         setError(response.data.message);
         return;
       } else {
+        console.log(response.data);
         setGuest(response.data);
         setSearchPerformed(true);
       }
@@ -171,7 +172,7 @@ const RSVPForm = () => {
                       type="text"
                       id={`guest-${g.id}`}
                       htmlFor={`guest-${g.id}`}
-                      value={g.guestname}
+                      value={g.guest}
                       readOnly={readOnly}
                       className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
