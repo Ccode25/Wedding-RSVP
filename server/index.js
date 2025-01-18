@@ -1,9 +1,19 @@
 import express from "express";
 import cors from "cors";
-import pool from "./db.js"; // Database connection
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const port = 5000;
+
+// Supabase client initialization
+const supabase = createClient(
+  process.env.SUPABASE_URL, // The URL from your Supabase project
+  process.env.SUPABASE_API_KEY // Your Supabase API key
+);
 
 // Middleware
 app.use(cors());
@@ -23,12 +33,18 @@ const handleGuestResponse = async (req, res, responseType) => {
   }
 
   try {
-    const result = await pool.query(
-      `UPDATE guestList SET response = $1 WHERE id = $2 RETURNING id, guest AS guestName, response`,
-      [responseType, guestId]
-    );
+    // Query Supabase to update the guest response
+    const { data, error } = await supabase
+      .from("guestlist") // Table name updated to "guestlist"
+      .update({ response: responseType })
+      .eq("id", guestId)
+      .select("id, guest, response");
 
-    if (result.rows.length === 0) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.length === 0) {
       return sendError(res, 404, "Guest not found.");
     }
 
@@ -36,7 +52,7 @@ const handleGuestResponse = async (req, res, responseType) => {
       message: `Guest ${
         responseType === "accept" ? "accepted" : "declined"
       } successfully.`,
-      ...result.rows[0],
+      ...data[0], // Send the updated guest data
     });
   } catch (error) {
     console.error(error.message);
@@ -53,18 +69,21 @@ app.get("/guest", async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      `SELECT id, guest AS guestName, response FROM guestList WHERE guest ILIKE $1`,
-      [`%${guestName}%`]
-    );
+    // Query Supabase to search guests in the "guestlist" table
+    const { data, error } = await supabase
+      .from("guestlist") // Table name updated to "guestlist"
+      .select("id, guest, response")
+      .ilike("guest", `%${guestName}%`);
 
-    if (result.rows.length === 0) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.length === 0) {
       return res.status(200).json(0); // Send 0 if no matching guest found
     }
 
-    const unrespondedGuests = result.rows.filter(
-      (guest) => guest.response === ""
-    );
+    const unrespondedGuests = data.filter((guest) => guest.response === "");
 
     if (unrespondedGuests.length === 0) {
       return res
@@ -81,14 +100,17 @@ app.get("/guest", async (req, res) => {
 
 app.get("/response", async (req, res) => {
   try {
-    // Query the database to get all guest names
-    const result = await pool.query(
-      "SELECT guest, email, response FROM guestlist"
-    );
-    const guestNames = result.rows; // Extract the rows (guest names)
+    // Query Supabase to get all guest names from the "guestlist" table
+    const { data, error } = await supabase
+      .from("guestlist") // Table name updated to "guestlist"
+      .select("guest, email, response");
+
+    if (error) {
+      throw new Error(error.message);
+    }
 
     // Send the names as a response
-    res.status(200).json(guestNames);
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching guest names:", error);
     res.status(500).json({ error: "Internal Server Error" });
