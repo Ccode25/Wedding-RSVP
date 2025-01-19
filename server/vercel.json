@@ -2,8 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "./index.js",
+      "src": "server/index.js",
       "use": "@vercel/node"
     }
-  ]
+  ],
+  "env": {
+    "SUPABASE_URL": "https://zuyqdgysdezsaplhcoky.supabase.co",
+    "SUPABASE_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1eXFkZ3lzZGV6c2FwbGhjb2t5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNzIwMDM3OCwiZXhwIjoyMDUyNzc2Mzc4fQ.5LTen4EHmHXgHbIbbbLdRa3NKb-DRvEknnXARqbRmI8"
+  }
 }
