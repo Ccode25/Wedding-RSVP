@@ -60,6 +60,10 @@ const handleGuestResponse = async (req, res, responseType) => {
   }
 };
 
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
 // Search for guests by name, excluding those with a response
 app.get("/guest", async (req, res) => {
   const { guestName } = req.query;
