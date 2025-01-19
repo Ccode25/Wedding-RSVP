@@ -184,7 +184,6 @@ const RSVPForm = () => {
                       id="email-id"
                       htmlFor="email-id"
                       value={g.email}
-                      readOnly={readOnly}
                       className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
 
