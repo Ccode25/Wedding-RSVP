@@ -30,7 +30,7 @@ const RSVPForm = () => {
     setSearchPerformed(true);
     try {
       const response = await axios.get(
-        `http://localhost:5000/guest?guestName=${guestName}`
+        `https://wedding-rsvp-9ynq.vercel.app/guest?guestName=${guestName}`
       );
 
       if (response.data === 0) {
@@ -73,8 +73,8 @@ const RSVPForm = () => {
 
     const url =
       action === "accept"
-        ? "http://localhost:5000/guest/accept"
-        : "http://localhost:5000/guest/decline";
+        ? "https://wedding-rsvp-9ynq.vercel.app/accept"
+        : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
 
     try {
       const response = await axios.post(url, { guestId: id });
