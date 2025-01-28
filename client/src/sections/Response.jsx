@@ -22,7 +22,9 @@ const Response = () => {
         setLoading(true);
         setError("");
         try {
-          const response = await axios.get("http://localhost:5000/response");
+          const response = await axios.get(
+            "https://wedding-rsvp-9ynq.vercel.app/response"
+          );
           setGuestList(response.data); // Update state with fetched data
         } catch (err) {
           setError("Failed to fetch guest list.");
