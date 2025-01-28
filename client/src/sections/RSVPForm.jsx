@@ -25,16 +25,18 @@ const RSVPForm = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Set loading state before making the API call
     setError(null);
     setSearchPerformed(true);
+
+    // Log loading immediately after setting it to true
+    console.log("Loading state set to:", loading);
+
     try {
       const response = await axios.get(
         `https://wedding-rsvp-9ynq.vercel.app/guest?guestName=${guestName}`
       );
-
       if (response.data === 0) {
-        // If no guest is found
         setError("No name found");
         setSearchPerformed(false);
         return;
@@ -44,7 +46,6 @@ const RSVPForm = () => {
         setError(response.data.message);
         return;
       } else {
-        console.log(response.data);
         setGuest(response.data);
         setSearchPerformed(true);
       }
@@ -53,7 +54,8 @@ const RSVPForm = () => {
       setGuest([]);
       setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading state to false after completion
+      console.log("Loading state after setLoading(false):", loading); // This log will be inside finally, where loading state will be false after completion
     }
   };
 
@@ -130,10 +132,15 @@ const RSVPForm = () => {
               />
 
               <Button
-                label={loading ? "Searching..." : "Find"}
+                label="Find"
                 onClick={searchGuest}
+                disabled={loading} // Disable button while loading
               />
             </>
+          )}
+
+          {loading && (
+            <div className="text-center text-2xl font-bold">Searching...</div>
           )}
 
           {error && <p className="mt-4 text-red-500 text-xl">{error}</p>}
