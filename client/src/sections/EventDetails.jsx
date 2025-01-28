@@ -117,9 +117,11 @@ const EventDetails = () => {
 
           {/* RSVP Button */}
           <div className="text-center mt-4 sm:mt-6 lg:mt-8">
-            <button className="py-3 px-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-sm sm:text-base lg:text-lg font-bold rounded-lg transition-transform transform hover:scale-105">
-              RSVP Now
-            </button>
+            <a href="#rsvp">
+              <button className="py-3 px-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-sm sm:text-base lg:text-lg font-bold rounded-lg transition-transform transform hover:scale-105">
+                RSVP Now
+              </button>
+            </a>
           </div>
         </div>
       </div>
