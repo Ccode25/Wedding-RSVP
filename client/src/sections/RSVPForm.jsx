@@ -73,7 +73,7 @@ const RSVPForm = () => {
 
     const url =
       action === "accept"
-        ? "https://wedding-rsvp-9ynq.vercel.app/accept"
+        ? "https://wedding-rsvp-9ynq.vercel.app/guest/accept"
         : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
 
     try {
