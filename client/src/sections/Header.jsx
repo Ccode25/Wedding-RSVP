@@ -7,7 +7,7 @@ const Header = () => {
       <nav className="flex justify-between p-6">
         {/* Wedding logo text */}
         <div className="font-extrabold text-3xl font-greatVibes text-[#d4af37]">
-          Wedding
+          <a href="https://wedding-invitation-ten-zeta.vercel.app/">Wedding</a>
         </div>
         {/* Navigation links */}
         <div className="space-x-3">
