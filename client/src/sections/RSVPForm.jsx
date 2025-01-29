@@ -153,8 +153,7 @@ const RSVPForm = () => {
           {guest.length > 0 && !responseReceived && (
             <div className="mt-6 p-8 rounded-lg shadow-xl space-y-8">
               <p className="text-4xl font-semibold text-white-800 font-greatVibes">
-                We’re sad to hear that, but we completely understand. Thank you
-                for your well wishes!
+                Will you celebrate with us?
               </p>
               <div className="space-y-6">
                 {guest.map((g) => (

@@ -9,8 +9,8 @@ const ResponseMessage = ({ message, isAttending }) => {
           <>😊 We are excited to see you! 🎉</>
         ) : (
           <>
-            😞 We’re sad to hear that, but we’d be happy to have you if you can
-            make it. 🤗
+            😞 We’re sad to hear that, but we completely understand. Thank you
+            for your well wishes!. 🤗
           </>
         )}
       </p>
