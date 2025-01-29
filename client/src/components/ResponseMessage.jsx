@@ -10,7 +10,7 @@ const ResponseMessage = ({ message, isAttending }) => {
         ) : (
           <>
             😞 We’re sad to hear that, but we completely understand. Thank you
-            for your well wishes!. 🤗
+            for your well wishes! 🤗
           </>
         )}
       </p>
