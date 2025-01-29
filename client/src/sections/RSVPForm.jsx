@@ -139,6 +139,11 @@ const RSVPForm = () => {
             </>
           )}
 
+          <p className="text-xs sm:text-sm text-gray-300 mt-24">
+            Please search for your name and let us know if you can make it or
+            not. Thank you!
+          </p>
+
           {loading && (
             <div className="text-center text-2xl font-bold">Searching...</div>
           )}
