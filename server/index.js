@@ -26,25 +26,29 @@ const sendError = (res, status, message) => {
 
 // Utility function to handle guest response (accept/decline)
 const handleGuestResponse = async (req, res, responseType) => {
-  const { guestId } = req.body;
+  const { guestId, email } = req.body;
 
   if (!guestId) {
     return sendError(res, 400, "Guest ID is required to update the response.");
   }
 
+  if (!email) {
+    return sendError(res, 400, "Email is required.");
+  }
+
   try {
-    // Query Supabase to update the guest response
+    // Update guest response and email in Supabase
     const { data, error } = await supabase
-      .from("guestlist") // Table name updated to "guestlist"
-      .update({ response: responseType })
+      .from("guestlist")
+      .update({ response: responseType, email }) // Update response and email
       .eq("id", guestId)
-      .select("id, guest, response");
+      .select("id, email, response");
 
     if (error) {
       throw new Error(error.message);
     }
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       return sendError(res, 404, "Guest not found.");
     }
 
@@ -55,7 +59,7 @@ const handleGuestResponse = async (req, res, responseType) => {
       ...data[0], // Send the updated guest data
     });
   } catch (error) {
-    console.error(error.message);
+    console.error("Error updating guest response:", error);
     sendError(res, 500, "An error occurred while updating the guest response.");
   }
 };
