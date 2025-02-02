@@ -44,6 +44,7 @@ const handleGuestResponse = async (req, res, responseType) => {
       .update({ response: responseType, email: email }) // Update response and email
       .eq("id", guestId)
       .select("id, guest, email, response");
+    console.log(data);
 
     if (error) {
       throw new Error(error.message);
