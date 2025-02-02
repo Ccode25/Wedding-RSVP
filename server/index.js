@@ -28,19 +28,20 @@ const sendError = (res, status, message) => {
 const handleGuestResponse = async (req, res, responseType) => {
   const { guestId, email } = req.body;
 
+  // Validate input data
   if (!guestId) {
     return sendError(res, 400, "Guest ID is required to update the response.");
   }
 
-  if (!email) {
-    return sendError(res, 400, "Email is required.");
+  if (!email || email.trim() === "") {
+    return sendError(res, 400, "Email is required and cannot be empty.");
   }
 
   try {
     // Update guest response and email in Supabase
     const { data, error } = await supabase
       .from("guestlist")
-      .update({ response: responseType, email }) // Update response and email
+      .update({ response: responseType, email: email }) // Update response and email
       .eq("id", guestId)
       .select("id, guest, email, response");
 
@@ -121,7 +122,7 @@ app.get("/response", async (req, res) => {
     res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching guest names:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    sendError(res, 500, "Internal Server Error");
   }
 });
 

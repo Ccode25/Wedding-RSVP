@@ -16,6 +16,7 @@ const RSVPForm = () => {
   const [responseReceived, setResponseReceived] = useState(false); // Track if response is received
   const [isAttending, setIsAttending] = useState(null); // Track if the guest is attending or not
   const [selectedGuestId, setSelectedGuestId] = useState(null); // Track selected guest for response
+  const [email, setEmail] = useState("");
 
   const readOnly = true;
 
@@ -59,6 +60,10 @@ const RSVPForm = () => {
     }
   };
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
   const handleInputChange = (e) => {
     setGuestName(e.target.value);
   };
@@ -67,7 +72,7 @@ const RSVPForm = () => {
     setSelectedGuestId((prevId) => (prevId === id ? null : id)); // Toggle selection
   };
 
-  const handleResponse = async (id, action) => {
+  const handleResponse = async (id, action, email) => {
     if (!selectedGuestId) {
       setError("Please select a guest before responding.");
       return;
@@ -79,7 +84,7 @@ const RSVPForm = () => {
         : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
 
     try {
-      const response = await axios.post(url, { guestId: id });
+      const response = await axios.post(url, { guestId: id, email });
       console.log(response.data);
 
       setResponseReceived(true);
@@ -194,7 +199,8 @@ const RSVPForm = () => {
                       type="email"
                       id="email-id"
                       htmlFor="email-id"
-                      value={g.email}
+                      value={email}
+                      onChange={handleEmailChange}
                       className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
 
