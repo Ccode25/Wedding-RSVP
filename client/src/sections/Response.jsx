@@ -15,7 +15,7 @@ const Response = () => {
   const [acceptedGuests, setAcceptedGuests] = useState(0);
   const [declinedGuests, setDeclinedGuests] = useState(0);
 
-  const URL = "http://localhost:5000";
+  const URL = "https://wedding-rsvp-9ynq.vercel.app";
 
   const handleLogin = (e, email, password) => {
     e.preventDefault();
