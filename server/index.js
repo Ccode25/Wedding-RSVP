@@ -20,19 +20,20 @@ const supabase = createClient(
 
 const allowedOrigins = [
   "http://localhost:5173", // Allow frontend during development
-  "https://wedding-rsvp-9ynq.vercel.app", // Allow deployed frontend
+  "https://wedding-rsvp-blond.vercel.app", // Correct the frontend URL to the correct one
+  "https://wedding-rsvp-9ynq.vercel.app", // Allow deployed frontend if needed
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+        callback(null, true); // Allow the request
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS")); // Block the request
       }
     },
-    credentials: true, // Allow cookies and authentication headers if needed
+    credentials: true, // Allow cookies and authentication headers
   })
 );
 
