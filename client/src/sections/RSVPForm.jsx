@@ -19,7 +19,7 @@ const RSVPForm = () => {
   const [guestEmails, setGuestEmails] = useState({}); // Track emails for each guest
 
   const readOnly = true;
-  const URL = "https://wedding-rsvp-9ynq.vercel.app/";
+  const URL = "https://wedding-rsvp-9ynq.vercel.app";
   const searchGuest = async () => {
     if (!guestName) {
       setError("Input name required");
