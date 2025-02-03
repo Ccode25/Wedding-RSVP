@@ -16,7 +16,7 @@ const RSVPForm = () => {
   const [responseReceived, setResponseReceived] = useState(false); // Track if response is received
   const [isAttending, setIsAttending] = useState(null); // Track if the guest is attending or not
   const [selectedGuestId, setSelectedGuestId] = useState(null); // Track selected guest for response
-  const [email, setEmail] = useState("");
+  const [guestEmails, setGuestEmails] = useState({}); // Track emails for each guest
 
   const readOnly = true;
 
@@ -30,12 +30,9 @@ const RSVPForm = () => {
     setError(null);
     setSearchPerformed(true);
 
-    // Log loading immediately after setting it to true
-    console.log("Loading state set to:", loading);
-
     try {
       const response = await axios.get(
-        `https://wedding-rsvp-9ynq.vercel.app/guest?guestName=${guestName}`
+        `http://localhost:5000/guest?guestName=${guestName}`
       );
       if (response.data === 0) {
         setError("No name found");
@@ -49,6 +46,7 @@ const RSVPForm = () => {
       } else {
         setGuest(response.data);
         setSearchPerformed(true);
+        setError("");
       }
     } catch (error) {
       console.error(error);
@@ -56,12 +54,14 @@ const RSVPForm = () => {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false); // Set loading state to false after completion
-      console.log("Loading state after setLoading(false):", loading); // This log will be inside finally, where loading state will be false after completion
     }
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const handleEmailChange = (e, guestId) => {
+    setGuestEmails((prevEmails) => ({
+      ...prevEmails,
+      [guestId]: e.target.value, // Update email for the specific guest by guestId
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -78,20 +78,44 @@ const RSVPForm = () => {
       return;
     }
 
+    // Ensure the email is valid and not empty
+    if (!email || !email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
+    // Ensure the guestId is also valid
+    if (!id) {
+      setError("Guest ID is invalid.");
+      return;
+    }
+
     const url =
       action === "accept"
-        ? "https://wedding-rsvp-9ynq.vercel.app/guest/accept"
-        : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
+        ? "http://localhost:5000/guest/accept"
+        : "http://localhost:5000/guest/decline";
+
+    // Log the data to verify what is being sent to the server
+    console.log("Request Data:", { guestId: id, email, action });
 
     try {
-      const response = await axios.post(url, { guestId: id, email });
-      console.log(response.data);
+      // Make the API call
+      const response = await axios.post(url, {
+        guestId: id,
+        email: email,
+        action: action, // Ensure 'action' is passed to handle logic on the server
+      });
 
+      console.log("Response Data:", response.data);
+
+      // If the response is successful
       setResponseReceived(true);
       setIsAttending(action === "accept");
 
+      // Reset guest data and search state
       setGuest([]);
       setSearchPerformed(false);
+      setError(null);
     } catch (error) {
       console.error("Error occurred:", error);
       setError("Something went wrong. Please try again.");
@@ -141,13 +165,13 @@ const RSVPForm = () => {
                 onClick={searchGuest}
                 disabled={loading} // Disable button while loading
               />
+
+              <p className="text-xs sm:text-sm text-gray-300 mt-24">
+                Please search for your name and let us know if you can make it
+                or not. Thank you!
+              </p>
             </>
           )}
-
-          <p className="text-xs sm:text-sm text-gray-300 mt-24">
-            Please search for your name and let us know if you can make it or
-            not. Thank you!
-          </p>
 
           {loading && (
             <div className="text-center text-2xl font-bold">Searching...</div>
@@ -197,10 +221,10 @@ const RSVPForm = () => {
                       icon={FaEnvelope}
                       placeholder="Email Address"
                       type="email"
-                      id="email-id"
-                      htmlFor="email-id"
-                      value={email}
-                      onChange={handleEmailChange}
+                      id={`email-${g.id}`}
+                      htmlFor={`email-${g.id}`}
+                      value={guestEmails[g.id] || ""} // Get the email for each specific guest
+                      onChange={(e) => handleEmailChange(e, g.id)} // Pass the guest id to handle email change
                       className="text-xl sm:text-xl w-full bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
                     />
 
@@ -212,7 +236,9 @@ const RSVPForm = () => {
                             ? ""
                             : "opacity-50 cursor-not-allowed"
                         }`}
-                        onClick={() => handleResponse(g.id, "accept")}
+                        onClick={() =>
+                          handleResponse(g.id, "accept", guestEmails[g.id])
+                        }
                         disabled={selectedGuestId !== g.id}
                       >
                         Yes
@@ -224,7 +250,9 @@ const RSVPForm = () => {
                             ? ""
                             : "opacity-50 cursor-not-allowed"
                         }`}
-                        onClick={() => handleResponse(g.id, "decline")}
+                        onClick={() =>
+                          handleResponse(g.id, "decline", guestEmails[g.id])
+                        }
                         disabled={selectedGuestId !== g.id}
                       >
                         No

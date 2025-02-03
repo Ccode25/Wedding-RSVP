@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import { Resend } from "resend";
+import sendEmail from "./sendEmail.js";
 
 // Load environment variables
 dotenv.config();
@@ -60,6 +62,10 @@ const handleGuestResponse = async (req, res, responseType) => {
       } successfully.`,
       ...data[0], // Send the updated guest data
     });
+
+    const { guest } = data[0];
+    console.log(guest, responseType, email);
+    await sendEmail(guest, email, responseType);
   } catch (error) {
     console.error("Error updating guest response:", error);
     sendError(res, 500, "An error occurred while updating the guest response.");
