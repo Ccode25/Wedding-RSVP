@@ -35,7 +35,7 @@ app.use(
 );
 
 // Middleware
-
+// app.use(cors());
 app.use(express.json());
 
 // Utility function for sending error responses
@@ -44,10 +44,10 @@ const sendError = (res, status, message) => {
 };
 
 // Utility function to handle guest response (accept/decline)
+// // Utility function to handle guest response (accept/decline)
 const handleGuestResponse = async (req, res, responseType) => {
   const { guestId, email } = req.body;
 
-  // Validate input data
   if (!guestId) {
     return sendError(res, 400, "Guest ID is required to update the response.");
   }
@@ -57,10 +57,10 @@ const handleGuestResponse = async (req, res, responseType) => {
   }
 
   try {
-    // Update guest response and email in Supabase
+    // Update the guest response and email in the database first
     const { data, error } = await supabase
       .from("guestlist")
-      .update({ response: responseType, email: email }) // Update response and email
+      .update({ response: responseType, email: email })
       .eq("id", guestId)
       .select("id, guest, email, response");
 
@@ -72,17 +72,10 @@ const handleGuestResponse = async (req, res, responseType) => {
       return sendError(res, 404, "Guest not found.");
     }
 
-    res.status(200).json({
-      message: `Guest ${
-        responseType === "accept" ? "accepted" : "declined"
-      } successfully.`,
-      ...data[0], // Send the updated guest data
-    });
-
     const { guest } = data[0];
     console.log(guest, responseType, email);
 
-    // Attempt to send the email and log failure if it occurs
+    // Ensure the email is sent only after the guest is successfully updated in the database
     const emailResult = await sendEmail(guest, email, responseType);
 
     if (!emailResult.success) {
@@ -100,9 +93,21 @@ const handleGuestResponse = async (req, res, responseType) => {
         "Failed to send email. Please check the server logs."
       );
     }
+
+    // Send response after successfully sending the email
+    return res.status(200).json({
+      message: `Guest ${
+        responseType === "accept" ? "accepted" : "declined"
+      } successfully.`,
+      ...data[0],
+    });
   } catch (error) {
     console.error("Error updating guest response:", error);
-    sendError(res, 500, "An error occurred while updating the guest response.");
+    return sendError(
+      res,
+      500,
+      "An error occurred while updating the guest response."
+    );
   }
 };
 
