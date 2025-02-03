@@ -46,7 +46,6 @@ const handleGuestResponse = async (req, res, responseType) => {
       .update({ response: responseType, email: email }) // Update response and email
       .eq("id", guestId)
       .select("id, guest, email, response");
-    console.log(data);
 
     if (error) {
       throw new Error(error.message);
@@ -65,7 +64,25 @@ const handleGuestResponse = async (req, res, responseType) => {
 
     const { guest } = data[0];
     console.log(guest, responseType, email);
-    await sendEmail(guest, email, responseType);
+
+    // Attempt to send the email and log failure if it occurs
+    const emailResult = await sendEmail(guest, email, responseType);
+
+    if (!emailResult.success) {
+      const emailErrorLog = {
+        error: "Email sending failed",
+        guestId: guestId,
+        action: responseType,
+        email: email,
+        reason: emailResult.reason || "Unknown error",
+      };
+      console.error("Email Error Log:", JSON.stringify(emailErrorLog));
+      return sendError(
+        res,
+        500,
+        "Failed to send email. Please check the server logs."
+      );
+    }
   } catch (error) {
     console.error("Error updating guest response:", error);
     sendError(res, 500, "An error occurred while updating the guest response.");
