@@ -92,8 +92,8 @@ const RSVPForm = () => {
 
     const url =
       action === "accept"
-        ? "http://wedding-rsvp-9ynq.vercel.app/guest/accept"
-        : "http://wedding-rsvp-9ynq.vercel.app/guest/decline";
+        ? "https://wedding-rsvp-9ynq.vercel.app/guest/accept"
+        : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
 
     // Log the data to verify what is being sent to the server
     console.log("Request Data:", { guestId: id, email, action });
