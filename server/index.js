@@ -17,8 +17,25 @@ const supabase = createClient(
   process.env.SUPABASE_API_KEY // Your Supabase API key
 );
 
+// Allow CORS from the specific frontend domain
+const allowedOrigins = [
+  "https://wedding-rsvp-blond.vercel.app", // Add your frontend URL here
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true); // Allow request from this origin
+      } else {
+        callback(new Error("Not allowed by CORS")); // Reject request from other origins
+      }
+    },
+  })
+);
+
 // Middleware
-app.use(cors());
+
 app.use(express.json());
 
 // Utility function for sending error responses
