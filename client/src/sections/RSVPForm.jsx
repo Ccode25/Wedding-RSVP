@@ -19,7 +19,7 @@ const RSVPForm = () => {
   const [guestEmails, setGuestEmails] = useState({}); // Track emails for each guest
 
   const readOnly = true;
-
+  const URL = "http://localhost:5000";
   const searchGuest = async () => {
     if (!guestName) {
       setError("Input name required");
@@ -31,9 +31,7 @@ const RSVPForm = () => {
     setSearchPerformed(true);
 
     try {
-      const response = await axios.get(
-        `https://wedding-rsvp-9ynq.vercel.app/guest?guestName=${guestName}`
-      );
+      const response = await axios.get(`${URL}/guest?guestName=${guestName}`);
       if (response.data === 0) {
         setError("No name found");
         setSearchPerformed(false);
@@ -90,10 +88,13 @@ const RSVPForm = () => {
       return;
     }
 
+    // const url =
+    //   action === "accept"
+    //     ? "https://wedding-rsvp-9ynq.vercel.app/guest/accept"
+    //     : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
+
     const url =
-      action === "accept"
-        ? "https://wedding-rsvp-9ynq.vercel.app/guest/accept"
-        : "https://wedding-rsvp-9ynq.vercel.app/guest/decline";
+      action === "accept" ? `${URL}/guest/accept` : `${URL}/guest/decline`;
 
     // Log the data to verify what is being sent to the server
     console.log("Request Data:", { guestId: id, email, action });
