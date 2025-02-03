@@ -57,7 +57,11 @@ const handleGuestResponse = async (req, res, responseType) => {
   }
 
   try {
-    const respondedAt = new Date().toISOString();
+    const respondedAt = new Date().toLocaleString("en-PH", {
+      timeZone: "Asia/Manila",
+    });
+
+    console.log(respondedAt);
 
     // Update the guest response in the database
     const { data, error } = await supabase
