@@ -32,7 +32,7 @@ const RSVPForm = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/guest?guestName=${guestName}`
+        `https://wedding-rsvp-9ynq.vercel.app/guest?guestName=${guestName}`
       );
       if (response.data === 0) {
         setError("No name found");
