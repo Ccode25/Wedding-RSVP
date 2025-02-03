@@ -29,6 +29,7 @@ const RSVPForm = () => {
     setLoading(true); // Set loading state before making the API call
     setError(null);
     setSearchPerformed(true);
+    
 
     try {
       const response = await axios.get(`${URL}/guest?guestName=${guestName}`);
