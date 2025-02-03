@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
-import { Resend } from "resend";
 import sendEmail from "./sendEmail.js";
 
 // Load environment variables
@@ -11,31 +10,32 @@ dotenv.config();
 const app = express();
 const port = 5000;
 
-// Supabase client initialization
+// Initialize Supabase client
 const supabase = createClient(
-  process.env.SUPABASE_URL, // The URL from your Supabase project
-  process.env.SUPABASE_API_KEY // Your Supabase API key
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_API_KEY
 );
 
-// Allow CORS from the specific frontend domain
+// Middleware
+
 const allowedOrigins = [
-  "https://wedding-rsvp-blond.vercel.app", // Add your frontend URL here
+  "http://localhost:5173", // Allow frontend during development
+  "https://wedding-rsvp-9ynq.vercel.app", // Allow deployed frontend
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true); // Allow request from this origin
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS")); // Reject request from other origins
+        callback(new Error("Not allowed by CORS"));
       }
     },
+    credentials: true, // Allow cookies and authentication headers if needed
   })
 );
 
-// Middleware
-// app.use(cors());
 app.use(express.json());
 
 // Utility function for sending error responses
@@ -44,7 +44,6 @@ const sendError = (res, status, message) => {
 };
 
 // Utility function to handle guest response (accept/decline)
-// // Utility function to handle guest response (accept/decline)
 const handleGuestResponse = async (req, res, responseType) => {
   const { guestId, email } = req.body;
 
@@ -57,12 +56,18 @@ const handleGuestResponse = async (req, res, responseType) => {
   }
 
   try {
-    // Update the guest response and email in the database first
+    const respondedAt = new Date().toISOString();
+
+    // Update the guest response in the database
     const { data, error } = await supabase
       .from("guestlist")
-      .update({ response: responseType, email: email })
+      .update({
+        response: responseType,
+        email: email,
+        responded_at: respondedAt,
+      })
       .eq("id", guestId)
-      .select("id, guest, email, response");
+      .select("id, guest, email, response, responded_at");
 
     if (error) {
       throw new Error(error.message);
@@ -75,26 +80,23 @@ const handleGuestResponse = async (req, res, responseType) => {
     const { guest } = data[0];
     console.log(guest, responseType, email);
 
-    // Ensure the email is sent only after the guest is successfully updated in the database
+    // Send confirmation email after updating database
     const emailResult = await sendEmail(guest, email, responseType);
 
     if (!emailResult.success) {
-      const emailErrorLog = {
-        error: "Email sending failed",
-        guestId: guestId,
-        action: responseType,
-        email: email,
-        reason: emailResult.reason || "Unknown error",
-      };
-      console.error("Email Error Log:", JSON.stringify(emailErrorLog));
-      return sendError(
-        res,
-        500,
-        "Failed to send email. Please check the server logs."
+      console.error(
+        "Email Error:",
+        JSON.stringify({
+          error: "Email sending failed",
+          guestId,
+          action: responseType,
+          email,
+          reason: emailResult.reason || "Unknown error",
+        })
       );
+      return sendError(res, 500, "Failed to send email. Check server logs.");
     }
 
-    // Send response after successfully sending the email
     return res.status(200).json({
       message: `Guest ${
         responseType === "accept" ? "accepted" : "declined"
@@ -103,30 +105,26 @@ const handleGuestResponse = async (req, res, responseType) => {
     });
   } catch (error) {
     console.error("Error updating guest response:", error);
-    return sendError(
-      res,
-      500,
-      "An error occurred while updating the guest response."
-    );
+    return sendError(res, 500, "An error occurred while updating response.");
   }
 };
 
+// Routes
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Search for guests by name, excluding those with a response
+// Search for guests by name, excluding those who have responded
 app.get("/guest", async (req, res) => {
   const { guestName } = req.query;
 
   if (!guestName) {
-    return sendError(res, 400, "Guest name is required to perform the search.");
+    return sendError(res, 400, "Guest name is required to search.");
   }
 
   try {
-    // Query Supabase to search guests in the "guestlist" table
     const { data, error } = await supabase
-      .from("guestlist") // Table name updated to "guestlist"
+      .from("guestlist")
       .select("id, guest, response")
       .ilike("guest", `%${guestName}%`);
 
@@ -135,7 +133,7 @@ app.get("/guest", async (req, res) => {
     }
 
     if (data.length === 0) {
-      return res.status(200).json(0); // Send 0 if no matching guest found
+      return res.status(200).json(0); // No matching guest found
     }
 
     const unrespondedGuests = data.filter((guest) => guest.response === "");
@@ -148,26 +146,26 @@ app.get("/guest", async (req, res) => {
 
     res.status(200).json(unrespondedGuests);
   } catch (error) {
-    console.error(error.message);
-    sendError(res, 500, "An error occurred while searching for the guest.");
+    console.error("Error searching for guest:", error);
+    sendError(res, 500, "An error occurred while searching.");
   }
 });
 
+// Fetch all guest responses
 app.get("/response", async (req, res) => {
   try {
-    // Query Supabase to get all guest names from the "guestlist" table
     const { data, error } = await supabase
-      .from("guestlist") // Table name updated to "guestlist"
-      .select("guest, email, response");
+      .from("guestlist")
+      .select("guest, email, response, responded_at")
+      .order("responded_at", { ascending: false }); // Sort by 'responded_at' in descending order
 
     if (error) {
       throw new Error(error.message);
     }
 
-    // Send the names as a response
     res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching guest names:", error);
+    console.error("Error fetching guest responses:", error);
     sendError(res, 500, "Internal Server Error");
   }
 });

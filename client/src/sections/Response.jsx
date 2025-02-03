@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaEnvelope, FaUser } from "react-icons/fa";
 import axios from "axios";
+import { format } from "date-fns";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "../components/Login";
@@ -15,9 +15,11 @@ const Response = () => {
   const [acceptedGuests, setAcceptedGuests] = useState(0);
   const [declinedGuests, setDeclinedGuests] = useState(0);
 
+  const URL = "http://localhost:5000";
+
   const handleLogin = (e, email, password) => {
     e.preventDefault();
-    setError(""); // Clear previous error when attempting login
+    setError("");
 
     if (email === "wedding" && password === "12345") {
       setIsLoggedIn(true);
@@ -38,15 +40,12 @@ const Response = () => {
         setLoading(true);
         setError("");
         try {
-          const response = await axios.get(
-            "https://wedding-rsvp-9ynq.vercel.app/response"
-          );
+          const response = await axios.get(`${URL}/response`);
           setGuestList(response.data);
           updateGuestCounts(response.data);
           toast.success("Guest list loaded successfully!");
         } catch (err) {
           setError("Failed to fetch guest list.");
-
           console.error("API Error:", err);
         } finally {
           setLoading(false);
@@ -70,49 +69,53 @@ const Response = () => {
     setDeclinedGuests(declined);
   };
 
-  const filteredGuests = guestList.filter((guest) => {
-    if (filter === "all") return true;
-    return guest.response === filter;
-  });
+  const filteredGuests = guestList
+    .filter((guest) => {
+      if (filter === "all") return true;
+      return guest.response === filter;
+    })
+    .sort((a, b) => new Date(b.responded_at) - new Date(a.responded_at)); // Sort by `responded_at` in descending order
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100 flex items-center justify-center p-4 md:p-6">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-6">
+      <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-4 md:p-6">
         {!isLoggedIn ? (
           <div className="flex flex-col items-center">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Login</h2>
-            <form className="w-full max-w-md bg-gray-50 p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+              Login
+            </h2>
+            <form className="w-full max-w-sm md:max-w-md bg-gray-50 p-4 md:p-6 rounded-lg shadow-md">
               <Login handleLogin={handleLogin} />
             </form>
           </div>
         ) : loading ? (
-          <div className="text-center text-2xl font-bold text-indigo-600">
+          <div className="text-center text-xl md:text-2xl font-bold text-indigo-600">
             Loading...
           </div>
         ) : error ? (
           <div className="text-center text-red-500 font-bold">{error}</div>
         ) : (
           <div>
-            <h2 className="text-center text-3xl font-bold text-indigo-700 mb-6">
+            <h2 className="text-center text-2xl md:text-3xl font-bold text-indigo-700 mb-4 md:mb-6">
               Guest List
             </h2>
 
-            <div className="flex justify-between bg-indigo-100 p-4 rounded-lg shadow-md mb-6">
-              <div className="text-indigo-700 font-semibold">
-                Total Guests: <span className="font-bold">{totalGuests}</span>
+            <div className="flex flex-wrap justify-between bg-indigo-100 p-3 md:p-4 rounded-lg shadow-md mb-4 md:mb-6">
+              <div className="text-indigo-700 font-semibold text-sm md:text-base">
+                Total: <span className="font-bold">{totalGuests}</span>
               </div>
-              <div className="text-green-600 font-semibold">
+              <div className="text-green-600 font-semibold text-sm md:text-base">
                 Accepted: <span className="font-bold">{acceptedGuests}</span>
               </div>
-              <div className="text-red-600 font-semibold">
+              <div className="text-red-600 font-semibold text-sm md:text-base">
                 Declined: <span className="font-bold">{declinedGuests}</span>
               </div>
             </div>
 
             <div className="flex justify-end mb-4">
               <select
-                className="bg-white text-gray-700 p-2 rounded border border-gray-300"
+                className="w-full md:w-auto bg-white text-gray-700 p-2 rounded border border-gray-300"
                 value={filter}
                 onChange={handleFilterChange}
               >
@@ -122,13 +125,23 @@ const Response = () => {
               </select>
             </div>
 
+            {/* Responsive table wrapper */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse bg-white shadow-md rounded-lg">
                 <thead>
-                  <tr className="bg-indigo-600 text-white">
-                    <th className="px-6 py-3 text-left">Guest Name</th>
-                    <th className="px-6 py-3 text-left">Email</th>
-                    <th className="px-6 py-3 text-left">Response</th>
+                  <tr className="bg-indigo-600 text-white text-sm md:text-base">
+                    <th className="px-3 md:px-6 py-2 md:py-3 text-left">
+                      Guest Name
+                    </th>
+                    <th className="px-3 md:px-6 py-2 md:py-3 text-left">
+                      Email
+                    </th>
+                    <th className="px-3 md:px-6 py-2 md:py-3 text-left">
+                      Response
+                    </th>
+                    <th className="px-3 md:px-6 py-2 md:py-3 text-left">
+                      Time
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -138,13 +151,17 @@ const Response = () => {
                         key={index}
                         className={`${
                           index % 2 === 0 ? "bg-gray-100" : "bg-gray-50"
-                        } hover:bg-gray-200 transition-colors`}
+                        } hover:bg-gray-200 transition-colors text-xs md:text-sm`}
                       >
-                        <td className="px-6 py-3 border">{guest.guest}</td>
-                        <td className="px-6 py-3 border">{guest.email}</td>
-                        <td className="px-6 py-3 border text-center">
+                        <td className="px-3 md:px-6 py-2 md:py-3 border">
+                          {guest.guest}
+                        </td>
+                        <td className="px-3 md:px-6 py-2 md:py-3 border">
+                          {guest.email}
+                        </td>
+                        <td className="px-3 md:px-6 py-2 md:py-3 border text-center">
                           <span
-                            className={`px-3 py-1 text-sm font-semibold rounded ${
+                            className={`px-2 md:px-3 py-1 text-xs md:text-sm font-semibold rounded ${
                               guest.response === "accept"
                                 ? "bg-green-100 text-green-700"
                                 : guest.response === "decline"
@@ -155,12 +172,20 @@ const Response = () => {
                             {guest.response || "No Response"}
                           </span>
                         </td>
+                        <td className="px-3 md:px-6 py-2 md:py-3 border">
+                          {guest.responded_at
+                            ? format(
+                                new Date(guest.responded_at),
+                                "MMM dd, yyyy hh:mm a"
+                              )
+                            : ""}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
                       <td
-                        colSpan="3"
+                        colSpan="4"
                         className="text-center text-gray-500 py-3"
                       >
                         No guests available.

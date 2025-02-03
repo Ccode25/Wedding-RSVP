@@ -6,6 +6,7 @@ import InputForm from "../components/InputForm";
 import Button from "../components/Button";
 import axios from "axios";
 import ResponseMessage from "../components/ResponseMessage";
+import { BounceLoader } from "react-spinners";
 
 const RSVPForm = () => {
   const [guestName, setGuestName] = useState("");
@@ -17,9 +18,11 @@ const RSVPForm = () => {
   const [isAttending, setIsAttending] = useState(null); // Track if the guest is attending or not
   const [selectedGuestId, setSelectedGuestId] = useState(null); // Track selected guest for response
   const [guestEmails, setGuestEmails] = useState({}); // Track emails for each guest
+  const [loadingGuests, setLoadingGuests] = useState({}); // Track loading status for each guest
 
   const readOnly = true;
-  const URL = "https://wedding-rsvp-9ynq.vercel.app";
+  const URL = "http://localhost:5000";
+
   const searchGuest = async () => {
     if (!guestName) {
       setError("Input name required");
@@ -47,7 +50,6 @@ const RSVPForm = () => {
         setError("");
       }
     } catch (error) {
-      console.error(error);
       setGuest([]);
       setError("Something went wrong. Please try again.");
     } finally {
@@ -91,18 +93,16 @@ const RSVPForm = () => {
     const url =
       action === "accept" ? `${URL}/guest/accept` : `${URL}/guest/decline`;
 
-    // Log the data to verify what is being sent to the server
-    console.log("Request Data:", { guestId: id, email, action });
-
     try {
+      // Set the guest as loading while processing the response
+      setLoadingGuests((prev) => ({ ...prev, [id]: true }));
+
       // Make the API call
       const response = await axios.post(url, {
         guestId: id,
         email: email,
         action: action, // Ensure 'action' is passed to handle logic on the server
       });
-
-      console.log("Response Data:", response.data);
 
       // If the response is successful
       setResponseReceived(true);
@@ -113,8 +113,10 @@ const RSVPForm = () => {
       setSearchPerformed(false);
       setError(null);
     } catch (error) {
-      console.error("Error occurred:", error);
       setError("Something went wrong. Please try again.");
+    } finally {
+      // Set loading state to false after completion
+      setLoadingGuests((prev) => ({ ...prev, [id]: false }));
     }
   };
 
@@ -254,6 +256,17 @@ const RSVPForm = () => {
                         No
                       </button>
                     </div>
+
+                    {loadingGuests[g.id] && (
+                      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                        <div className="text-center text-2xl font-bold text-white p-6 sm:p-8 rounded-lg bg-black bg-opacity-75 shadow-lg w-full max-w-xs sm:max-w-md">
+                          <BounceLoader color="#ffffff" size={50} />
+                          <p className="text-lg sm:text-2xl mt-4">
+                            Sending response... Please wait
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
