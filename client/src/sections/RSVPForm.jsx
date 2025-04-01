@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import img from "../assets/background.jpg";
+import img from "../assets/Hero2.jpg";
 import { FaEnvelope, FaSearch, FaUser } from "react-icons/fa";
 import RsvpHeader from "../components/RsvpHeader";
 import InputForm from "../components/InputForm";
