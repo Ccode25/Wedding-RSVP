@@ -108,10 +108,10 @@ const EventDetails = () => {
 
             {/* Dress Code */}
             <p className="text-base sm:text-lg lg:text-xl text-green-800">
-              Dress Code: Formal Attire
+              Dress Code: Semi-Formal Attire
             </p>
             <p className="text-base sm:text-lg lg:text-xl text-green-800">
-              Please RSVP by April 15, 2025
+              Please RSVP by April 20, 2025
             </p>
           </div>
 

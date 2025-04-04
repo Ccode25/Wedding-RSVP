@@ -17,7 +17,7 @@ const HeroDesktop = () => {
       <div className="relative flex items-center justify-end text-end text-white h-full px-40">
         <div className="space-y-6 max-w-3xl">
           {/* Heading with Calligraphy Font */}
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold font-greatVibes tracking-wider leading-tight mb-4 text-[#8c7b53] text-shadow-md ">
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold font-greatVibes tracking-wider leading-tight mb-4 text-[#d4af37] text-shadow-md ">
             Celebrate with Us on Our Special Day
           </h1>
 
