@@ -21,7 +21,7 @@ const Response = () => {
     e.preventDefault();
     setError("");
 
-    if (email === "wedding" && password === "12345") {
+    if (email === "AJMEL" && password === "mia051725") {
       setIsLoggedIn(true);
       toast.success("Login successful!");
     } else {
