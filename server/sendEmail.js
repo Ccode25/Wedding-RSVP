@@ -26,11 +26,9 @@ const sendEmail = async (guest, email, response) => {
   `
       : `
     <p style="font-size: 16px; color: #555;">
-      We appreciate you taking the time to respond to our invitation. We have received your <strong>decline</strong> response, and we're sorry you won't be able to join us for the event.
+      We appreciate you taking the time to respond to our invitation. We have received your <strong>decline</strong> response, we’ll miss you on our special day, but we appreciate your well wishes!
     </p>
-    <div style="text-align: center; margin: 20px 0;">
-      <p style="font-size: 16px; color: #555;">If you change your mind, feel free to reach out to us.</p>
-    </div>
+    
   `;
 
   // Email options
@@ -44,7 +42,7 @@ const sendEmail = async (guest, email, response) => {
           <p style="font-size: 16px; color: #555;">Dear <strong>${guest}</strong>,</p>
           ${dynamicContent}
           <p style="font-size: 14px; color: #777; text-align: center;">
-            Best regards,<br>Your Event Host
+            Best regards,<br>AeronJake&Mel
           </p>
         </div>
       `,
