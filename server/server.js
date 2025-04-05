@@ -16,7 +16,17 @@ const supabase = createClient(
 );
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://aeronmelnyweddingrsvp.blog",
+      "https://www.aeronmelnyweddingrsvp.blog",
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 const sendEmail = async (guest, email, response) => {
